@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Slaybuzz — Campus Marketplace</title>
+  <link rel="shortcut icon" href="slaybuzz_icon.png" type="image/x-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:     #FF6B6B;
+      --navy:    #1A1A2E;
+      --cream:   #FFF8F3;
+      --gold:    #FFD166;
+      --mint:    #5DCAA5;
+      --lavender:#A78BFA;
+      --muted:   #888780;
+      --surface: #F5F0EB;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--cream);
+      color: var(--navy);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NOISE TEXTURE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── DECORATIVE BLOBS ── */
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.18;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .blob-1 { width: 500px; height: 500px; background: var(--red);     top: -120px; left: -100px; }
+    .blob-2 { width: 400px; height: 400px; background: var(--gold);    bottom: -100px; right: -80px; }
+    .blob-3 { width: 300px; height: 300px; background: var(--lavender);top: 40%; left: 55%; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 48px;
+      background: rgba(255, 248, 243, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 0.5px solid rgba(26,26,46,0.08);
+    }
+
+    .logo img {
+      height: 36px;
+      display: block;
+    }
+
+    .cta-btn {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--navy);
+      border: none;
+      padding: 11px 24px;
+      border-radius: 100px;
+      cursor: pointer;
+      text-decoration: none;
+      letter-spacing: 0.01em;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+    .cta-btn:hover {
+      background: var(--red);
+      transform: translateY(-1px);
+    }
+    .cta-btn:active { transform: scale(0.97); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 0.5px solid rgba(26,26,46,0.12);
+      border-radius: 100px;
+      padding: 6px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+    .hero-eyebrow .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--mint);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .hero-question {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(13px, 2vw, 18px);
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.25s;
+    }
+
+    .hero-headline {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(36px, 7vw, 88px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      color: var(--navy);
+      max-width: 900px;
+      opacity: 0;
+      animation: fadeUp 0.7s ease forwards 0.4s;
+    }
+    .hero-headline .accent { color: var(--red); }
+    .hero-headline .accent-gold { color: var(--gold); }
+
+    .hero-sub {
+      margin-top: 28px;
+      font-size: clamp(14px, 1.8vw, 18px);
+      color: var(--muted);
+      font-weight: 400;
+      max-width: 480px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.55s;
+    }
+
+    .hero-actions {
+      margin-top: 44px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.7s;
+    }
+
+    .btn-primary {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      background: var(--red);
+      border: none;
+      padding: 15px 36px;
+      border-radius: 100px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s, background 0.2s;
+      display: inline-block;
+    }
+    .btn-primary:hover  { background: #e85555; transform: translateY(-2px); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--navy);
+      background: transparent;
+      border: 1px solid rgba(26,26,46,0.2);
+      padding: 14px 28px;
+      border-radius: 100px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: var(--navy); transform: translateY(-2px); }
+
+    /* ── COINS FLOATING BADGE ── */
+    .coin-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold);
+      border-radius: 100px;
+      padding: 8px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #7A5A00;
+      margin-top: 52px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.85s;
+    }
+    .coin-icon {
+      font-size: 16px;
+    }
+
+    /* ── MARQUEE STRIP ── */
+    .strip {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      overflow: hidden;
+      border-top: 0.5px solid rgba(26,26,46,0.08);
+      border-bottom: 0.5px solid rgba(26,26,46,0.08);
+      background: var(--navy);
+      padding: 14px 0;
+    }
+    .strip-track {
+      display: flex;
+      gap: 0;
+      animation: marquee 18s linear infinite;
+      white-space: nowrap;
+    }
+    .strip-item {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--cream);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0 32px;
+      opacity: 0.7;
+      flex-shrink: 0;
+    }
+    .strip-item.accent { color: var(--red); opacity: 1; }
+    .strip-item.gold   { color: var(--gold); opacity: 1; }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── FEATURES ROW ── */
+    .features {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      padding: 72px 48px;
+      flex-wrap: wrap;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .feat-card {
+      background: #fff;
+      border: 0.5px solid rgba(26,26,46,0.1);
+      border-radius: 20px;
+      padding: 28px 28px;
+      flex: 1;
+      min-width: 220px;
+      max-width: 300px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards;
+    }
+    .feat-card:nth-child(1) { animation-delay: 0.1s; }
+    .feat-card:nth-child(2) { animation-delay: 0.2s; }
+    .feat-card:nth-child(3) { animation-delay: 0.3s; }
+    .feat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    .feat-icon {
+      width: 42px; height: 42px;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .feat-card h3 {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .feat-card p {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 32px 24px;
+      border-top: 0.5px solid rgba(26,26,46,0.08);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .hero { padding: 100px 20px 60px; }
+      .features { padding: 48px 20px; gap: 14px; }
+      .feat-card { max-width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a class="logo" href="#">
+      <img src="slaybuzz_logo.png" alt="Slaybuzz" />
+    </a>
+    <a class="cta-btn" href="YOUR_GOOGLE_FORM_LINK" target="_blank">Join waitlist</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-eyebrow">
+      <span class="dot"></span>
+      Coming soon to your campus
+    </div>
+
+    <p class="hero-question">Tired of long canteen queues and empty pockets?</p>
+
+    <h1 class="hero-headline">
+      Order. Pay. <span class="accent">Slay.</span><br/>
+      Earn <span class="accent-gold">coins</span> every time.
+    </h1>
+
+    <p class="hero-sub">
+      The campus marketplace for college students — food, stationery, and rewards, all in one place.
+    </p>
+
+    <div class="hero-actions">
+      <a class="btn-primary" href="YOUR_GOOGLE_FORM_LINK" target="_blank">Join the waitlist</a>
+      <a class="btn-ghost" href="#">Learn more</a>
+    </div>
+
+    <div class="coin-pill">
+      <span class="coin-icon">🪙</span>
+      Earn coins on every order — redeem for recharges & vouchers
+    </div>
+  </section>
+
+  <!-- MARQUEE STRIP -->
+  <div class="strip">
+    <div class="strip-track">
+      <span class="strip-item accent">Slaybuzz</span>
+      <span class="strip-item">Campus Marketplace</span>
+      <span class="strip-item gold">Earn Coins</span>
+      <span class="strip-item">Canteen Orders</span>
+      <span class="strip-item accent">Rewards</span>
+      <span class="strip-item">Stationery</span>
+      <span class="strip-item gold">Recharge</span>
+      <span class="strip-item">College Life</span>
+      <span class="strip-item accent">Slaybuzz</span>
+      <span class="strip-item">Campus Marketplace</span>
+      <span class="strip-item gold">Earn Coins</span>
+      <span class="strip-item">Canteen Orders</span>
+      <span class="strip-item accent">Rewards</span>
+      <span class="strip-item">Stationery</span>
+      <span class="strip-item gold">Recharge</span>
+      <span class="strip-item">College Life</span>
+    </div>
+  </div>
+
+  <!-- FEATURES -->
+  <div class="features">
+
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#FFF0F0;">🍱</div>
+      <h3>Order from canteen</h3>
+      <p>Skip the queue. Order food from your college canteen and pick it up when it's ready.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#FFF8E0;">🪙</div>
+      <h3>Earn coins</h3>
+      <p>Every rupee you spend earns you coins. Stack them up and redeem for real rewards.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#E8FAF4;">📱</div>
+      <h3>Free recharges</h3>
+      <p>Use your coins to recharge your phone. No cash needed — just spend and earn.</p>
+    </div>
+
+    <div class="feat-card">
+      <div class="feat-icon" style="background:#F0EBFF;">🛍️</div>
+      <h3>Shop stationery</h3>
+      <p>Order pens, notebooks, and supplies from campus shops — delivered to your hostel.</p>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    &copy; 2026 Slaybuzz. Made with love for college students.
+  </footer>
+
+</body>
+</html>
